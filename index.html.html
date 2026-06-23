@@ -1,0 +1,937 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>나에게 닿기</title>
+  <style>
+    :root {
+      --bg: #f7f3ed;
+      --card: #fffaf3;
+      --text: #2d2926;
+      --muted: #766f68;
+      --line: #e3d8ca;
+      --accent: #5f6f52;
+      --accent-soft: #e7eddf;
+      --danger: #9b3a35;
+      --shadow: 0 10px 28px rgba(60, 46, 32, 0.08);
+      --radius: 18px;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Noto Sans KR", system-ui, sans-serif;
+      line-height: 1.5;
+    }
+
+    .app {
+      width: min(920px, 100%);
+      margin: 0 auto;
+      padding: 20px 16px 96px;
+    }
+
+    header {
+      padding: 12px 2px 18px;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 28px;
+      letter-spacing: -0.04em;
+      font-weight: 750;
+    }
+
+    .subtitle {
+      margin-top: 4px;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .tabs {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      background: rgba(247, 243, 237, 0.92);
+      backdrop-filter: blur(14px);
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      padding: 10px 0 12px;
+      border-bottom: 1px solid rgba(227, 216, 202, 0.7);
+    }
+
+    .tab {
+      border: 1px solid var(--line);
+      background: var(--card);
+      color: var(--text);
+      border-radius: 999px;
+      padding: 10px 8px;
+      font-size: 15px;
+      font-weight: 650;
+      cursor: pointer;
+    }
+
+    .tab.active {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #fff;
+    }
+
+    .panel {
+      display: none;
+      margin-top: 18px;
+    }
+
+    .panel.active {
+      display: block;
+    }
+
+    .card {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 18px;
+      margin-bottom: 14px;
+    }
+
+    .field {
+      margin-bottom: 20px;
+    }
+
+    label, .field-title {
+      display: block;
+      font-weight: 760;
+      letter-spacing: -0.03em;
+      margin-bottom: 8px;
+      font-size: 16px;
+    }
+
+    textarea, input[type="text"], input[type="search"], select {
+      width: 100%;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: #fffdf9;
+      color: var(--text);
+      font: inherit;
+      padding: 12px 13px;
+      outline: none;
+    }
+
+    textarea {
+      min-height: 88px;
+      resize: vertical;
+    }
+
+    textarea:focus, input:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(95,111,82,0.12);
+    }
+
+    .row {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: #fffdf9;
+      color: var(--text);
+      padding: 11px 14px;
+      font-size: 15px;
+      font-weight: 680;
+      cursor: pointer;
+    }
+
+    .btn.primary {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #fff;
+    }
+
+    .btn.soft {
+      background: var(--accent-soft);
+      border-color: var(--accent-soft);
+      color: #31402b;
+    }
+
+    .btn.danger {
+      background: #fff5f4;
+      border-color: #ecc8c4;
+      color: var(--danger);
+    }
+
+    .btn.small {
+      padding: 8px 10px;
+      border-radius: 11px;
+      font-size: 13px;
+    }
+
+    .emotion-panel {
+      display: none;
+      border: 1px solid var(--line);
+      background: #fffdf9;
+      border-radius: 16px;
+      padding: 14px;
+      margin-top: 10px;
+    }
+
+    .emotion-panel.open {
+      display: block;
+    }
+
+    .emotion-group {
+      margin-bottom: 14px;
+    }
+
+    .emotion-group:last-child {
+      margin-bottom: 0;
+    }
+
+    .emotion-group h3 {
+      margin: 0 0 8px;
+      font-size: 14px;
+      color: var(--muted);
+      letter-spacing: -0.03em;
+    }
+
+    .chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 7px;
+    }
+
+    .chip {
+      border: 1px solid var(--line);
+      background: #fffaf3;
+      border-radius: 999px;
+      padding: 7px 10px;
+      font-size: 14px;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .chip.selected {
+      border-color: var(--accent);
+      background: var(--accent-soft);
+      color: #25331f;
+      font-weight: 700;
+    }
+
+    .selected-emotions {
+      min-height: 42px;
+      background: #fffdf9;
+      border: 1px dashed var(--line);
+      border-radius: 14px;
+      padding: 10px;
+      color: var(--muted);
+    }
+
+    .strength-grid {
+      display: grid;
+      grid-template-columns: repeat(10, 1fr);
+      gap: 6px;
+    }
+
+    .strength {
+      border: 1px solid var(--line);
+      background: #fffdf9;
+      border-radius: 12px;
+      padding: 9px 0;
+      cursor: pointer;
+      font-weight: 700;
+    }
+
+    .strength.selected {
+      background: var(--accent);
+      color: #fff;
+      border-color: var(--accent);
+    }
+
+    .actions {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-top: 18px;
+    }
+
+    .muted {
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .records-top {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+
+    .records-top input {
+      flex: 1;
+    }
+
+    .record-card {
+      cursor: default;
+    }
+
+    .record-head {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      align-items: flex-start;
+      margin-bottom: 10px;
+    }
+
+    .record-date {
+      font-weight: 760;
+      letter-spacing: -0.03em;
+    }
+
+    .record-summary {
+      color: var(--muted);
+      font-size: 14px;
+      margin-top: 2px;
+    }
+
+    .preview {
+      margin-top: 8px;
+      white-space: pre-wrap;
+    }
+
+    .record-detail {
+      display: none;
+      margin-top: 14px;
+      border-top: 1px solid var(--line);
+      padding-top: 14px;
+    }
+
+    .record-detail.open {
+      display: block;
+    }
+
+    .detail-block {
+      margin-bottom: 12px;
+    }
+
+    .detail-label {
+      font-size: 13px;
+      color: var(--muted);
+      margin-bottom: 3px;
+      font-weight: 700;
+    }
+
+    .detail-text {
+      white-space: pre-wrap;
+    }
+
+    .empty {
+      text-align: center;
+      color: var(--muted);
+      padding: 40px 10px;
+      border: 1px dashed var(--line);
+      border-radius: var(--radius);
+      background: rgba(255, 250, 243, 0.55);
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    input[type="file"] {
+      display: none;
+    }
+
+    @media (max-width: 520px) {
+      .app {
+        padding: 14px 12px 90px;
+      }
+
+      h1 {
+        font-size: 25px;
+      }
+
+      .card {
+        padding: 15px;
+      }
+
+      .tabs {
+        gap: 6px;
+      }
+
+      .tab {
+        font-size: 14px;
+        padding: 9px 6px;
+      }
+
+      .strength-grid {
+        grid-template-columns: repeat(5, 1fr);
+      }
+
+      .record-head {
+        display: block;
+      }
+
+      .record-head .row {
+        margin-top: 8px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header>
+      <h1>나에게 닿기</h1>
+      <div class="subtitle">상황 기준 감정 기록장</div>
+    </header>
+
+    <nav class="tabs">
+      <button class="tab active" data-tab="write">새 기록</button>
+      <button class="tab" data-tab="records">전체 기록</button>
+      <button class="tab" data-tab="backup">백업</button>
+    </nav>
+
+    <main>
+      <section id="write" class="panel active">
+        <form id="entryForm" class="card">
+          <input type="hidden" id="entryId" />
+
+          <div class="field">
+            <label for="situation">1. 어떤 일이 있었나?</label>
+            <textarea id="situation"></textarea>
+          </div>
+
+          <div class="field">
+            <div class="field-title">2. 그때 느꼈던 감정은?</div>
+
+            <label for="emotionText" class="muted">직접 입력</label>
+            <input id="emotionText" type="text" autocomplete="off" />
+
+            <div class="actions">
+              <button type="button" class="btn soft" id="toggleEmotions">마음에 가까운 말 찾아보기</button>
+            </div>
+
+            <div id="emotionPanel" class="emotion-panel"></div>
+
+            <div style="margin-top: 12px;">
+              <div class="field-title" style="font-size: 14px;">선택한 감정</div>
+              <div id="selectedEmotions" class="selected-emotions">없음</div>
+            </div>
+          </div>
+
+          <div class="field">
+            <div class="field-title">전체 감정 강도</div>
+            <div id="strengthGrid" class="strength-grid"></div>
+          </div>
+
+          <div class="field">
+            <label for="autoThought">3. 그때 자동으로 떠오른 생각은?</label>
+            <textarea id="autoThought"></textarea>
+          </div>
+
+          <div class="field">
+            <label for="softThought">3-1. 그 생각을 조금 더 부드럽게 바꾼다면?</label>
+            <textarea id="softThought"></textarea>
+          </div>
+
+          <div class="field">
+            <label for="praise">4. 이런 나를 칭찬해준다면?</label>
+            <textarea id="praise"></textarea>
+          </div>
+
+          <div class="field">
+            <label for="extraThought">5. 추가로 떠오른 생각이 있다면?</label>
+            <textarea id="extraThought"></textarea>
+          </div>
+
+          <div class="actions">
+            <button type="submit" class="btn primary" id="saveBtn">저장하기</button>
+            <button type="button" class="btn" id="resetBtn">새로 쓰기</button>
+          </div>
+        </form>
+      </section>
+
+      <section id="records" class="panel">
+        <div class="records-top">
+          <input id="searchInput" type="search" placeholder="검색" autocomplete="off" />
+          <button class="btn small" id="clearSearch">지우기</button>
+        </div>
+        <div id="recordList"></div>
+      </section>
+
+      <section id="backup" class="panel">
+        <div class="card">
+          <div class="field">
+            <div class="field-title">내보내기</div>
+            <p class="muted">현재 브라우저에 저장된 기록을 JSON 파일로 저장합니다.</p>
+            <button type="button" class="btn primary" id="exportBtn">JSON 내보내기</button>
+          </div>
+
+          <div class="field">
+            <div class="field-title">가져오기</div>
+            <p class="muted">이전에 내보낸 JSON 파일을 불러옵니다. 같은 기록은 중복 저장되지 않습니다.</p>
+            <label class="btn soft" for="importFile">JSON 가져오기</label>
+            <input type="file" id="importFile" accept="application/json,.json" />
+          </div>
+
+          <div class="field">
+            <div class="field-title">전체 삭제</div>
+            <p class="muted">브라우저 내부에 저장된 모든 기록을 삭제합니다.</p>
+            <button type="button" class="btn danger" id="deleteAllBtn">전체 기록 삭제</button>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script>
+    const STORAGE_KEY = "naege-datgi-v1";
+
+    const emotionGroups = [
+      {
+        title: "불안 / 두려움",
+        words: ["불안함", "걱정됨", "초조함", "긴장됨", "조마조마함", "막막함", "압박감", "두려움"]
+      },
+      {
+        title: "슬픔 / 상실감",
+        words: ["슬픔", "울적함", "허전함", "외로움", "서운함", "섭섭함", "상처받음", "실망감"]
+      },
+      {
+        title: "화 / 짜증",
+        words: ["화남", "짜증남", "답답함", "억울함", "불쾌함", "언짢음", "무시당한 느낌", "침범당한 느낌"]
+      },
+      {
+        title: "죄책감 / 수치심",
+        words: ["미안함", "죄책감", "후회됨", "자책감", "부끄러움", "민망함", "창피함", "부족한 느낌"]
+      },
+      {
+        title: "부담 / 지침",
+        words: ["부담스러움", "버거움", "지침", "피곤함", "소진됨", "여유 없음", "감당 안 됨", "쉬고 싶음"]
+      },
+      {
+        title: "혼란 / 양가감정",
+        words: ["혼란스러움", "헷갈림", "복잡함", "애매함", "당황함", "찜찜함", "괜찮은 척함", "좋기도 싫기도 함"]
+      },
+      {
+        title: "관계감정",
+        words: ["인정받고 싶음", "이해받고 싶음", "존중받고 싶음", "눈치 보임", "미움받기 싫음", "거리 두고 싶음", "기대고 싶음", "확인받고 싶음"]
+      },
+      {
+        title: "긍정 / 안정감",
+        words: ["편안함", "안도감", "차분함", "고마움", "기쁨", "뿌듯함", "자신감", "따뜻함"]
+      }
+    ];
+
+    let entries = loadEntries();
+    let selectedEmotions = [];
+    let selectedStrength = null;
+
+    const $ = (id) => document.getElementById(id);
+
+    function uid() {
+      return Date.now().toString(36) + Math.random().toString(36).slice(2, 10);
+    }
+
+    function loadEntries() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        return raw ? JSON.parse(raw) : [];
+      } catch {
+        return [];
+      }
+    }
+
+    function saveEntries() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(entries));
+    }
+
+    function formatDate(iso) {
+      const date = new Date(iso);
+      return new Intl.DateTimeFormat("ko-KR", {
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+        hour: "numeric",
+        minute: "2-digit"
+      }).format(date);
+    }
+
+    function switchTab(tabName) {
+      document.querySelectorAll(".tab").forEach(btn => {
+        btn.classList.toggle("active", btn.dataset.tab === tabName);
+      });
+      document.querySelectorAll(".panel").forEach(panel => {
+        panel.classList.toggle("active", panel.id === tabName);
+      });
+      if (tabName === "records") renderRecords();
+    }
+
+    function initTabs() {
+      document.querySelectorAll(".tab").forEach(btn => {
+        btn.addEventListener("click", () => switchTab(btn.dataset.tab));
+      });
+    }
+
+    function renderEmotionPanel() {
+      const panel = $("emotionPanel");
+      panel.innerHTML = "";
+
+      emotionGroups.forEach(group => {
+        const groupEl = document.createElement("div");
+        groupEl.className = "emotion-group";
+
+        const title = document.createElement("h3");
+        title.textContent = group.title;
+        groupEl.appendChild(title);
+
+        const chips = document.createElement("div");
+        chips.className = "chips";
+
+        group.words.forEach(word => {
+          const chip = document.createElement("button");
+          chip.type = "button";
+          chip.className = "chip";
+          chip.textContent = word;
+          chip.dataset.word = word;
+          chip.addEventListener("click", () => toggleEmotion(word));
+          chips.appendChild(chip);
+        });
+
+        groupEl.appendChild(chips);
+        panel.appendChild(groupEl);
+      });
+
+      updateEmotionUI();
+    }
+
+    function toggleEmotion(word) {
+      if (selectedEmotions.includes(word)) {
+        selectedEmotions = selectedEmotions.filter(item => item !== word);
+      } else {
+        selectedEmotions.push(word);
+      }
+      updateEmotionUI();
+    }
+
+    function updateEmotionUI() {
+      document.querySelectorAll(".chip").forEach(chip => {
+        chip.classList.toggle("selected", selectedEmotions.includes(chip.dataset.word));
+      });
+      $("selectedEmotions").textContent = selectedEmotions.length ? selectedEmotions.join(" · ") : "없음";
+    }
+
+    function renderStrengthGrid() {
+      const grid = $("strengthGrid");
+      grid.innerHTML = "";
+      for (let i = 1; i <= 10; i++) {
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = "strength";
+        btn.textContent = i;
+        btn.dataset.value = i;
+        btn.addEventListener("click", () => {
+          selectedStrength = Number(btn.dataset.value);
+          updateStrengthUI();
+        });
+        grid.appendChild(btn);
+      }
+      updateStrengthUI();
+    }
+
+    function updateStrengthUI() {
+      document.querySelectorAll(".strength").forEach(btn => {
+        btn.classList.toggle("selected", Number(btn.dataset.value) === selectedStrength);
+      });
+    }
+
+    function resetForm() {
+      $("entryId").value = "";
+      $("entryForm").reset();
+      selectedEmotions = [];
+      selectedStrength = null;
+      updateEmotionUI();
+      updateStrengthUI();
+      $("saveBtn").textContent = "저장하기";
+    }
+
+    function getFormData() {
+      return {
+        id: $("entryId").value || uid(),
+        createdAt: $("entryId").value ? entries.find(e => e.id === $("entryId").value)?.createdAt || new Date().toISOString() : new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        situation: $("situation").value.trim(),
+        emotionText: $("emotionText").value.trim(),
+        selectedEmotions: [...selectedEmotions],
+        strength: selectedStrength,
+        autoThought: $("autoThought").value.trim(),
+        softThought: $("softThought").value.trim(),
+        praise: $("praise").value.trim(),
+        extraThought: $("extraThought").value.trim()
+      };
+    }
+
+    function saveEntry(event) {
+      event.preventDefault();
+      const entry = getFormData();
+
+      const hasContent = [
+        entry.situation,
+        entry.emotionText,
+        entry.autoThought,
+        entry.softThought,
+        entry.praise,
+        entry.extraThought
+      ].some(Boolean) || entry.selectedEmotions.length || entry.strength;
+
+      if (!hasContent) {
+        alert("저장할 내용이 없습니다.");
+        return;
+      }
+
+      const existingIndex = entries.findIndex(item => item.id === entry.id);
+      if (existingIndex >= 0) {
+        entries[existingIndex] = entry;
+      } else {
+        entries.unshift(entry);
+      }
+
+      entries.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+      saveEntries();
+      resetForm();
+      renderRecords();
+      switchTab("records");
+    }
+
+    function fillForm(entry) {
+      $("entryId").value = entry.id;
+      $("situation").value = entry.situation || "";
+      $("emotionText").value = entry.emotionText || "";
+      selectedEmotions = Array.isArray(entry.selectedEmotions) ? [...entry.selectedEmotions] : [];
+      selectedStrength = entry.strength || null;
+      $("autoThought").value = entry.autoThought || "";
+      $("softThought").value = entry.softThought || "";
+      $("praise").value = entry.praise || "";
+      $("extraThought").value = entry.extraThought || "";
+      $("saveBtn").textContent = "수정 저장";
+      updateEmotionUI();
+      updateStrengthUI();
+      switchTab("write");
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+
+    function escapeHtml(text) {
+      return String(text || "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
+
+    function makePreview(text, length = 80) {
+      const clean = String(text || "").replace(/\s+/g, " ").trim();
+      if (!clean) return "";
+      return clean.length > length ? clean.slice(0, length) + "..." : clean;
+    }
+
+    function recordMatches(entry, query) {
+      if (!query) return true;
+      const blob = [
+        entry.situation,
+        entry.emotionText,
+        ...(entry.selectedEmotions || []),
+        entry.strength,
+        entry.autoThought,
+        entry.softThought,
+        entry.praise,
+        entry.extraThought,
+        entry.createdAt
+      ].join(" ").toLowerCase();
+      return blob.includes(query.toLowerCase());
+    }
+
+    function renderRecords() {
+      const list = $("recordList");
+      const query = $("searchInput").value.trim();
+      const filtered = entries.filter(entry => recordMatches(entry, query));
+      list.innerHTML = "";
+
+      if (!filtered.length) {
+        const empty = document.createElement("div");
+        empty.className = "empty";
+        empty.textContent = entries.length ? "검색 결과가 없습니다." : "저장된 기록이 없습니다.";
+        list.appendChild(empty);
+        return;
+      }
+
+      filtered.forEach(entry => {
+        const emotions = [
+          ...(entry.selectedEmotions || []),
+          entry.emotionText ? entry.emotionText : null
+        ].filter(Boolean);
+
+        const card = document.createElement("article");
+        card.className = "card record-card";
+        card.innerHTML = `
+          <div class="record-head">
+            <div>
+              <div class="record-date">${escapeHtml(formatDate(entry.createdAt))}</div>
+              <div class="record-summary">
+                ${emotions.length ? escapeHtml(emotions.join(" · ")) : "감정 기록 없음"}
+                ${entry.strength ? ` · 강도 ${escapeHtml(entry.strength)}` : ""}
+              </div>
+            </div>
+            <div class="row">
+              <button class="btn small soft" data-action="toggle">펼쳐보기</button>
+              <button class="btn small" data-action="edit">수정</button>
+              <button class="btn small danger" data-action="delete">삭제</button>
+            </div>
+          </div>
+          <div class="preview">${escapeHtml(makePreview(entry.situation || entry.autoThought || entry.praise || entry.extraThought || ""))}</div>
+          <div class="record-detail">
+            ${detailBlock("상황", entry.situation)}
+            ${detailBlock("그때 느꼈던 감정", emotions.join(" · "))}
+            ${detailBlock("전체 감정 강도", entry.strength ? String(entry.strength) : "")}
+            ${detailBlock("자동으로 떠오른 생각", entry.autoThought)}
+            ${detailBlock("조금 더 부드럽게 바꾼다면", entry.softThought)}
+            ${detailBlock("이런 나를 칭찬해준다면", entry.praise)}
+            ${detailBlock("추가로 떠오른 생각", entry.extraThought)}
+          </div>
+        `;
+
+        card.querySelector('[data-action="toggle"]').addEventListener("click", (e) => {
+          const detail = card.querySelector(".record-detail");
+          const isOpen = detail.classList.toggle("open");
+          e.target.textContent = isOpen ? "접기" : "펼쳐보기";
+        });
+
+        card.querySelector('[data-action="edit"]').addEventListener("click", () => fillForm(entry));
+
+        card.querySelector('[data-action="delete"]').addEventListener("click", () => {
+          if (confirm("이 기록을 삭제할까요?")) {
+            entries = entries.filter(item => item.id !== entry.id);
+            saveEntries();
+            renderRecords();
+          }
+        });
+
+        list.appendChild(card);
+      });
+    }
+
+    function detailBlock(label, value) {
+      if (!value) return "";
+      return `
+        <div class="detail-block">
+          <div class="detail-label">${escapeHtml(label)}</div>
+          <div class="detail-text">${escapeHtml(value)}</div>
+        </div>
+      `;
+    }
+
+    function exportData() {
+      const data = {
+        app: "나에게 닿기",
+        version: 1,
+        exportedAt: new Date().toISOString(),
+        entries
+      };
+      const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      const date = new Date().toISOString().slice(0, 10);
+      a.href = url;
+      a.download = `naege-datgi-backup-${date}.json`;
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+
+    function importData(file) {
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = () => {
+        try {
+          const parsed = JSON.parse(reader.result);
+          const incoming = Array.isArray(parsed) ? parsed : parsed.entries;
+          if (!Array.isArray(incoming)) throw new Error("Invalid format");
+
+          const existingIds = new Set(entries.map(entry => entry.id));
+          const normalized = incoming
+            .filter(entry => entry && entry.id && !existingIds.has(entry.id))
+            .map(entry => ({
+              id: entry.id,
+              createdAt: entry.createdAt || new Date().toISOString(),
+              updatedAt: entry.updatedAt || entry.createdAt || new Date().toISOString(),
+              situation: entry.situation || "",
+              emotionText: entry.emotionText || "",
+              selectedEmotions: Array.isArray(entry.selectedEmotions) ? entry.selectedEmotions : [],
+              strength: entry.strength || null,
+              autoThought: entry.autoThought || "",
+              softThought: entry.softThought || "",
+              praise: entry.praise || "",
+              extraThought: entry.extraThought || ""
+            }));
+
+          entries = [...entries, ...normalized].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+          saveEntries();
+          renderRecords();
+          alert(`${normalized.length}개 기록을 가져왔습니다.`);
+          $("importFile").value = "";
+        } catch {
+          alert("가져올 수 없는 파일입니다.");
+        }
+      };
+      reader.readAsText(file);
+    }
+
+    function deleteAll() {
+      if (!entries.length) {
+        alert("삭제할 기록이 없습니다.");
+        return;
+      }
+      if (confirm("전체 기록을 삭제할까요? 이 작업은 되돌릴 수 없습니다.")) {
+        entries = [];
+        saveEntries();
+        resetForm();
+        renderRecords();
+        alert("전체 기록을 삭제했습니다.");
+      }
+    }
+
+    function init() {
+      initTabs();
+      renderEmotionPanel();
+      renderStrengthGrid();
+      renderRecords();
+
+      $("toggleEmotions").addEventListener("click", () => {
+        const panel = $("emotionPanel");
+        const open = panel.classList.toggle("open");
+        $("toggleEmotions").textContent = open ? "감정 단어 접기" : "마음에 가까운 말 찾아보기";
+      });
+
+      $("entryForm").addEventListener("submit", saveEntry);
+      $("resetBtn").addEventListener("click", resetForm);
+      $("searchInput").addEventListener("input", renderRecords);
+      $("clearSearch").addEventListener("click", () => {
+        $("searchInput").value = "";
+        renderRecords();
+      });
+      $("exportBtn").addEventListener("click", exportData);
+      $("importFile").addEventListener("change", (e) => importData(e.target.files[0]));
+      $("deleteAllBtn").addEventListener("click", deleteAll);
+    }
+
+    init();
+  </script>
+</body>
+</html>
